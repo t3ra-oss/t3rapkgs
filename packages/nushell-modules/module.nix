@@ -6,7 +6,7 @@ let
   cfg = config.t3ra.nushell-modules;
   
   # Available module options
-  moduleOptions = [ "git" "halp" "moon" ];
+  moduleOptions = [ "git" "halp" "moon" "kubectl"];
 in
 {
   options.t3ra.nushell-modules = {
@@ -14,7 +14,7 @@ in
 
     enabledModules = mkOption {
       type = types.listOf (types.enum moduleOptions);
-      default = moduleOptions; # All modules by default
+      default = [ "git" ]; # All modules by default
       example = [ "git" "halp" ];
       description = ''
         List of nushell modules to include. Available modules: ${concatStringsSep ", " moduleOptions}
