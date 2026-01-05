@@ -1,0 +1,8 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+format = """$directory$character$cmd_duration"""
+right_format = """$git_branch$git_status$nix_shell$go$python$bun"""
+add_newline = true
+
+[directory]
+repo_root_style = 'dimmed cyan'
