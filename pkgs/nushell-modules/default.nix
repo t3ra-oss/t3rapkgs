@@ -2,7 +2,7 @@
 
 let
   # Default to all available modules if none specified
-  allModules = [ "git" "halp" "moon" ];
+  allModules = [ "git" "halp" "moon" "kubectl" ];
   selectedModules = if enabledModules != null then enabledModules else allModules;
 in
 

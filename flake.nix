@@ -4,67 +4,75 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    devshell.url = "github:numtide/devshell";
   };
 
-  outputs = { self, nixpkgs, flake-utils, devshell }:
+  outputs = { self, nixpkgs, flake-utils }:
+    let
+      lib = nixpkgs.lib;
+    in
     {
+      # Library functions (similar to flake-utils.lib)
+      lib.devshell = import ./lib/devshell { inherit lib; };
+
       # Overlay to add t3rapkgs to nixpkgs
       overlays.default = final: prev: {
         t3ra = {
           # Default package with all modules
-          nushell-modules = final.callPackage ./packages/nushell-modules { };
-          
-          # Configurable package function
-          nushell-modules-with = enabledModules: 
-            final.callPackage ./packages/nushell-modules { inherit enabledModules; };
-          
-          # Future packages go here:
-          # another-tool = final.callPackage ./packages/another-tool { };
+          nushell-modules = final.callPackage ./pkgs/nushell-modules { };
+
+          # Configurable package function for selective module installation
+          nushell-modules-with = enabledModules:
+            final.callPackage ./pkgs/nushell-modules { inherit enabledModules; };
+
+          # Default zsh package with default extensions
+          zsh = final.callPackage ./pkgs/zsh { };
+
+          # Configurable package function for selective extension installation
+          zsh-with = enabledExtensions:
+            final.callPackage ./pkgs/zsh { inherit enabledExtensions; };
         };
       };
 
-      # Module for configuration (imports all, enables nothing by default)
+      # NixOS modules for configuration
       nixosModules = {
-        default = { imports = [ ./packages/nushell-modules/module.nix ]; };
-        nushell-modules = ./packages/nushell-modules/module.nix;
+        nushell-modules = ./modules/nushell-modules;
+        zsh = ./modules/zsh;
+        default = {
+          imports = [
+            self.nixosModules.nushell-modules
+            self.nixosModules.zsh
+          ];
+        };
       };
-    } // flake-utils.lib.eachDefaultSystem (system:
+    }
+    // flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [ 
-            devshell.overlays.default
-            self.overlays.default 
-          ];
-          config.allowUnfree = true;
+          overlays = [ self.overlays.default ];
         };
       in
       {
+        # Per-system outputs
         packages = {
           nushell-modules = pkgs.t3ra.nushell-modules;
-          # Future packages go here:
-          # another-tool = pkgs.t3ra.another-tool;
-          
+          zsh = pkgs.t3ra.zsh;
+
           # Make nushell-modules the default for now
-          default = self.packages.${system}.nushell-modules;
+          default = pkgs.t3ra.nushell-modules;
         };
 
         # Development shell for this repository
-        devShells.default = pkgs.devshell.mkShell ({ config, ... }: {
-          imports = [ self.nixosModules.nushell-modules ];
-          
-          t3ra.nushell-modules = {
-            enable = true;
-            enabledModules = [ "git" ];
-          };
-
-          packages = with pkgs; [
+        devShells.default = pkgs.mkShell {
+          buildInputs = with pkgs; [
             nixpkgs-fmt
             nix-tree
+            nushell
           ];
-          
-          devshell.startup."100-nushell".text = config.t3ra.nushell-modules.startupText;
-        });
+
+          shellHook = ''
+            export NU_LIB_DIRS="${pkgs.t3ra.nushell-modules}"
+          '';
+        };
       });
 }
