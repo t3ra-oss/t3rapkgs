@@ -2,15 +2,15 @@
 
 buildNupmPackage {
   pname = "git";
-  version = "0.1.0";
+  version = "0.1.1";
 
   src =
     fetchFromGitHub
       {
         owner = "t3ra-oss";
         repo = "nupkgs";
-        rev = "v0.1.0";
-        hash = "sha256-Hhj7FSFdbd40r70SmjZNJAn4PWPFbX1BmE/BynQCKc4=";
+        rev = "v0.1.1";
+        hash = "sha256-k+j6U70GoPXN++G80X12C7lj/Q24K1u/Y4NTVJguZDo=";
       }
     + "/pkgs/git";
 
