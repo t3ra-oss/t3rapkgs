@@ -122,7 +122,7 @@ nix build
 
 # Build specific package
 nix build .#nushell-modules
-nix build .#git    # or .#moon, .#kubectl
+nix build .#nu-git    # or .#nu-moon, .#nu-kubectl
 nix build .#zsh
 
 # Enter development shell

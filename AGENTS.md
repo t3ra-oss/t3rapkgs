@@ -12,7 +12,7 @@ This is a Nix flake repository containing T3RA's collection of Nix packages and 
 - `nix flake check` - Validate flake configuration and build packages
 - `nix build` - Build the default package (nushell-modules)
 - `nix build .#nushell-modules` - Build all nushell modules merged
-- `nix build .#git` / `.#moon` / `.#kubectl` - Build an individual module
+- `nix build .#nu-git` / `.#nu-moon` / `.#nu-kubectl` - Build an individual module
 - `nix build .#zsh` - Build zsh package
 
 ### Formatting
@@ -34,11 +34,11 @@ t3rapkgs/
 ├── pkgs/                        # Package definitions (derivations)
 │   ├── build-support/
 │   │   └── build-nupm-package/  # nupm.nuon -> Nix derivation builder
-│   ├── git/
+│   ├── nu-git/
 │   │   └── default.nix          # fetchFromGitHub(nupkgs) + buildNupmPackage
-│   ├── moon/
+│   ├── nu-moon/
 │   │   └── default.nix          # same pattern
-│   ├── kubectl/
+│   ├── nu-kubectl/
 │   │   └── default.nix          # same pattern
 │   └── zsh/
 │       ├── default.nix          # Package definition
@@ -67,11 +67,16 @@ t3rapkgs/
   own installer would under `$NUPM_HOME` (`$out/modules/<name>` for module
   packages, `$out/scripts` for script packages). Only `type: module` and
   `type: script` are supported; `type: custom` is not.
-- `t3ra.git`, `t3ra.moon`, `t3ra.kubectl` - Individual nushell modules. Each
-  is `buildNupmPackage` fed a `src` fetched straight from
-  [`t3ra-oss/nupkgs`](https://github.com/t3ra-oss/nupkgs) via
-  `fetchFromGitHub` (pinned `rev`/`hash` per package, bump by hand when
-  `nupkgs` changes) - the same pattern nixpkgs uses for e.g. `k9s`
+- `t3ra.nu-git`, `t3ra.nu-moon`, `t3ra.nu-kubectl` - Individual nushell
+  modules, `nu-` prefixed so they don't read as "the git/moon/kubectl CLI" in
+  a repo that also packages unrelated tools (`pname` inside each
+  `default.nix` stays the bare name - `"git"`, etc. - since it's checked
+  against `nupm.nuon`'s `name` field by `buildNupmPackage`; only the
+  top-level attribute is prefixed). Each is `buildNupmPackage` fed a `src`
+  fetched straight from [`t3ra-oss/nupkgs`](https://github.com/t3ra-oss/nupkgs)
+  via `fetchFromGitHub`, pinned to the `v0.1.0` tag (bump the `rev`/`hash`
+  by hand when `nupkgs` cuts a new release) - the same pattern nixpkgs uses
+  for e.g. `k9s`
   (`buildGoModule` + `fetchFromGitHub`, source vendored nowhere in-tree).
   `nupkgs` is a plain nupm package repo; this repo never depends on its
   flake, so there is no dependency cycle even though `nupkgs` separately,

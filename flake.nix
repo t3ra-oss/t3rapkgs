@@ -17,11 +17,17 @@
       # reach another enabled module. `cp -r` rather than symlinks, so that
       # resolves regardless of whether Nushell follows symlinks when
       # resolving relative `use` paths.
+      #
+      # `enabledModules` uses the nu module's own name ("git", not "nu-git")
+      # - that's what `use`/`overlay use` inside the merged bundle actually
+      # refers to. The `nu-` prefix only exists on the top-level package
+      # attribute (`t3ra.nu-git`), to avoid reading as "the git CLI" in a
+      # repo that also packages other, unrelated tools.
       mkNushellModules = pkgs: enabledModules:
         pkgs.runCommand "t3ra-nushell-modules" { } (
           "mkdir -p $out\n"
           + lib.concatMapStringsSep "\n"
-            (m: "cp -r ${pkgs.t3ra.${m}}/modules/${m} $out/${m}")
+            (m: "cp -r ${pkgs.t3ra."nu-${m}"}/modules/${m} $out/${m}")
             enabledModules
         );
     in
@@ -32,16 +38,17 @@
           # Build support: turn a nupm-format package into a Nix derivation
           buildNupmPackage = final.callPackage ./pkgs/build-support/build-nupm-package { };
 
-          # Individual nushell modules. Source is fetched straight from
-          # t3ra-oss/nupkgs (a plain nupm package repo with no Nix of its
-          # own knowledge required here) via fetchFromGitHub, same as any
-          # nixpkgs package pulls in its upstream source - t3rapkgs never
-          # depends on nupkgs's flake, so there's no dependency cycle even
-          # though nupkgs may optionally depend on t3rapkgs for its own,
-          # separate self-build convenience.
-          git = final.callPackage ./pkgs/git { inherit (final.t3ra) buildNupmPackage; };
-          moon = final.callPackage ./pkgs/moon { inherit (final.t3ra) buildNupmPackage; };
-          kubectl = final.callPackage ./pkgs/kubectl { inherit (final.t3ra) buildNupmPackage; };
+          # Individual nushell modules, `nu-` prefixed so they don't read as
+          # "the git/moon/kubectl CLI" in a repo that packages unrelated
+          # tools too. Source is fetched straight from t3ra-oss/nupkgs (a
+          # plain nupm package repo with no Nix of its own knowledge required
+          # here) via fetchFromGitHub, same as any nixpkgs package pulls in
+          # its upstream source - t3rapkgs never depends on nupkgs's flake,
+          # so there's no dependency cycle even though nupkgs may optionally
+          # depend on t3rapkgs for its own, separate self-build convenience.
+          nu-git = final.callPackage ./pkgs/nu-git { inherit (final.t3ra) buildNupmPackage; };
+          nu-moon = final.callPackage ./pkgs/nu-moon { inherit (final.t3ra) buildNupmPackage; };
+          nu-kubectl = final.callPackage ./pkgs/nu-kubectl { inherit (final.t3ra) buildNupmPackage; };
 
           # Default package with all modules
           nushell-modules = mkNushellModules final [ "git" "moon" "kubectl" ];
@@ -80,9 +87,9 @@
       {
         # Per-system outputs
         packages = {
-          git = pkgs.t3ra.git;
-          moon = pkgs.t3ra.moon;
-          kubectl = pkgs.t3ra.kubectl;
+          nu-git = pkgs.t3ra.nu-git;
+          nu-moon = pkgs.t3ra.nu-moon;
+          nu-kubectl = pkgs.t3ra.nu-kubectl;
           nushell-modules = pkgs.t3ra.nushell-modules;
           zsh = pkgs.t3ra.zsh;
 
