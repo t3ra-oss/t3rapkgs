@@ -34,15 +34,6 @@ t3rapkgs/
 │   └── devshell/
 │       └── default.nix          # mkDevShells helper for consumers
 ├── pkgs/                        # Package definitions (derivations)
-│   ├── build-support/
-│   │   └── build-nupm-package/  # nupm.nuon -> Nix derivation builder
-│   ├── nushell-modules/
-│   │   ├── default.nix          # Package definition
-│   │   └── modules/             # Nushell module sources
-│   │       ├── git/
-│   │       ├── halp/
-│   │       ├── moon/
-│   │       └── kubectl/
 │   └── zsh/
 │       ├── default.nix          # Package definition
 │       └── default.zshrc        # Default zsh configuration
@@ -65,16 +56,25 @@ t3rapkgs/
 - Each package has its own `default.nix` with metadata and build instructions
 
 ### Available Packages
-- `t3ra.buildNupmPackage` - Build support: turns a nupm-format package (a
-  directory with `nupm.nuon`) into a Nix derivation, laid out the way nupm's
-  own installer would under `$NUPM_HOME` (`$out/modules/<name>` for module
-  packages, `$out/scripts` for script packages). Only `type: module` and
-  `type: script` are supported; `type: custom` is not. Consumed by
-  `t3ra-oss/nupkgs`, which packages T3RA's own nupm modules this way.
-- `t3ra.nushell-modules` - All nushell modules (git, halp, moon, kubectl)
+- `t3ra.nushell-modules` - All nushell modules (git, halp, moon, kubectl),
+  merged into one flat directory (`$out/<name>` per module). The actual
+  packages live in [`t3ra-oss/nupkgs`](https://github.com/t3ra-oss/nupkgs)
+  as real nupm packages (built with nupkgs' own `buildNupmPackage`); this
+  repo just re-exports them under the `t3ra` namespace and flattens
+  `nupkgs`'s `$out/modules/<name>` layout back to `$out/<name>` for
+  backwards compatibility with existing consumers (e.g.
+  `modules/nushell-modules`, which assumes a flat layout). `halp/mod.nu`
+  does `use ../moon` - a real relative path - so `halp` only works loaded
+  alongside `moon`; `nushell-modules` and `nushell-modules-with` copy files
+  rather than symlink, so this resolves regardless of enabled module subset.
 - `t3ra.nushell-modules-with` - Function to select specific modules
 - `t3ra.zsh` - Zsh with oh-my-zsh and default extensions
 - `t3ra.zsh-with` - Function to select specific extensions
+
+Note: `buildNupmPackage` itself (nupm.nuon -> Nix derivation) now lives in
+`nupkgs`, not here - it belongs with the ecosystem it targets, and keeping
+it there avoids a circular flake dependency (this repo depends on `nupkgs`
+one-directionally; `nupkgs` depends only on `nixpkgs`).
 
 ### Using the Overlay
 To use t3rapkgs in another flake:
