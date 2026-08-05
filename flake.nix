@@ -17,6 +17,9 @@
       # Overlay to add t3rapkgs to nixpkgs
       overlays.default = final: prev: {
         t3ra = {
+          # Build support: turn a nupm-format package into a Nix derivation
+          buildNupmPackage = final.callPackage ./pkgs/build-support/build-nupm-package { };
+
           # Default package with all modules
           nushell-modules = final.callPackage ./pkgs/nushell-modules { };
 

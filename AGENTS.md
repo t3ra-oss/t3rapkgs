@@ -34,6 +34,8 @@ t3rapkgs/
 │   └── devshell/
 │       └── default.nix          # mkDevShells helper for consumers
 ├── pkgs/                        # Package definitions (derivations)
+│   ├── build-support/
+│   │   └── build-nupm-package/  # nupm.nuon -> Nix derivation builder
 │   ├── nushell-modules/
 │   │   ├── default.nix          # Package definition
 │   │   └── modules/             # Nushell module sources
@@ -63,6 +65,12 @@ t3rapkgs/
 - Each package has its own `default.nix` with metadata and build instructions
 
 ### Available Packages
+- `t3ra.buildNupmPackage` - Build support: turns a nupm-format package (a
+  directory with `nupm.nuon`) into a Nix derivation, laid out the way nupm's
+  own installer would under `$NUPM_HOME` (`$out/modules/<name>` for module
+  packages, `$out/scripts` for script packages). Only `type: module` and
+  `type: script` are supported; `type: custom` is not. Consumed by
+  `t3ra-oss/nupkgs`, which packages T3RA's own nupm modules this way.
 - `t3ra.nushell-modules` - All nushell modules (git, halp, moon, kubectl)
 - `t3ra.nushell-modules-with` - Function to select specific modules
 - `t3ra.zsh` - Zsh with oh-my-zsh and default extensions
