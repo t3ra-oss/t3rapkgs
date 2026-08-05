@@ -13,11 +13,11 @@
 
       # Merge selected nupkgs nushell modules into one flat directory
       # ($out/<name> per module) so a single $env.NU_LIB_DIRS entry sees all
-      # of them. Flat, not `nupkgs`'s own `$out/modules/<name>` layout,
-      # because `halp/mod.nu` does `use ../moon` - a real relative path that
-      # only resolves when `halp` and `moon` are siblings on disk. `cp -r`
-      # rather than symlinks, so that resolves regardless of whether Nushell
-      # follows symlinks when resolving relative `use` paths.
+      # of them. Flat, not `nupkgs`'s own `$out/modules/<name>` layout, so a
+      # module can `use ../sibling` - a real relative path - to reach another
+      # enabled module. `cp -r` rather than symlinks, so that resolves
+      # regardless of whether Nushell follows symlinks when resolving
+      # relative `use` paths.
       mkNushellModules = pkgs: enabledModules:
         let
           nuPkgs = nupkgs.packages.${pkgs.system};
@@ -30,14 +30,11 @@
         );
     in
     {
-      # Library functions (similar to flake-utils.lib)
-      lib.devshell = import ./lib/devshell { inherit lib; };
-
       # Overlay to add t3rapkgs to nixpkgs
       overlays.default = final: prev: {
         t3ra = {
           # Default package with all modules
-          nushell-modules = mkNushellModules final [ "git" "halp" "moon" "kubectl" ];
+          nushell-modules = mkNushellModules final [ "git" "moon" "kubectl" ];
 
           # Configurable package function for selective module installation
           nushell-modules-with = enabledModules: mkNushellModules final enabledModules;

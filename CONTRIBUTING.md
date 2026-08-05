@@ -41,7 +41,6 @@ t3rapkgs/
 │       ├── module.nix     # NixOS module
 │       └── modules/       # Individual modules
 │           ├── git/       # Git utilities
-│           ├── halp/      # Help tools
 │           └── moon/      # Moon utilities
 ├── README.md
 └── CONTRIBUTING.md
@@ -126,7 +125,7 @@ mkdir -p packages/nushell-modules/modules/your-module
 Add your module to the `allModules` list in `packages/nushell-modules/default.nix`:
 
 ```nix
-allModules = [ "git" "halp" "moon" "your-module" ];
+allModules = [ "git" "moon" "your-module" ];
 ```
 
 ## Code Standards

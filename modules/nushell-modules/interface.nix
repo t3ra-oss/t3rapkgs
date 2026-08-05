@@ -5,7 +5,7 @@ let
   t = l.types;
 
   # Available module options
-  moduleOptions = [ "git" "halp" "moon" "kubectl" ];
+  moduleOptions = [ "git" "moon" "kubectl" ];
 in
 {
   options.t3ra.nushell-modules = {
@@ -15,7 +15,7 @@ in
       type = t.listOf (t.enum moduleOptions);
       default = [ "git" ];
       description = "List of nushell modules to include. Available modules: ${l.concatStringsSep ", " moduleOptions}";
-      example = [ "git" "moon" "halp" ];
+      example = [ "git" "moon" ];
     };
 
     config = l.mkOption {

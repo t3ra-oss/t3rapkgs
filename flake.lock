@@ -71,11 +71,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1785957944,
-        "narHash": "sha256-AMPKRooBzaMZpT2vABf17Lk3pQINbPvSfEjtl50RJP8=",
+        "lastModified": 1785958410,
+        "narHash": "sha256-YavLytEJEfJE7hCf0Lx5Jz7kgK1Xub40wvuBl6j3XJ0=",
         "owner": "t3ra-oss",
         "repo": "nupkgs",
-        "rev": "3dfdcb07766d4d1053bb1f75adf802d2d0596316",
+        "rev": "d603704fc6e781a54ed1ee09d0ae1f77c9b933b5",
         "type": "github"
       },
       "original": {

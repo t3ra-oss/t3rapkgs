@@ -30,14 +30,11 @@ The repository follows Nix flake conventions:
 ```
 t3rapkgs/
 ├── flake.nix                    # Main flake configuration
-├── lib/
-│   └── devshell/
-│       └── default.nix          # mkDevShells helper for consumers
 ├── pkgs/                        # Package definitions (derivations)
 │   └── zsh/
 │       ├── default.nix          # Package definition
 │       └── default.zshrc        # Default zsh configuration
-└── modules/                     # NixOS/devshell configuration modules
+└── modules/                     # NixOS-style configuration modules
     ├── nushell-modules/
     │   ├── interface.nix        # Module options
     │   ├── default.nix          # Module implementation
@@ -56,17 +53,17 @@ t3rapkgs/
 - Each package has its own `default.nix` with metadata and build instructions
 
 ### Available Packages
-- `t3ra.nushell-modules` - All nushell modules (git, halp, moon, kubectl),
-  merged into one flat directory (`$out/<name>` per module). The actual
-  packages live in [`t3ra-oss/nupkgs`](https://github.com/t3ra-oss/nupkgs)
-  as real nupm packages (built with nupkgs' own `buildNupmPackage`); this
-  repo just re-exports them under the `t3ra` namespace and flattens
-  `nupkgs`'s `$out/modules/<name>` layout back to `$out/<name>` for
-  backwards compatibility with existing consumers (e.g.
-  `modules/nushell-modules`, which assumes a flat layout). `halp/mod.nu`
-  does `use ../moon` - a real relative path - so `halp` only works loaded
-  alongside `moon`; `nushell-modules` and `nushell-modules-with` copy files
-  rather than symlink, so this resolves regardless of enabled module subset.
+- `t3ra.nushell-modules` - All nushell modules (git, moon, kubectl), merged
+  into one flat directory (`$out/<name>` per module). The actual packages
+  live in [`t3ra-oss/nupkgs`](https://github.com/t3ra-oss/nupkgs) as real
+  nupm packages (built with nupkgs' own `buildNupmPackage`); this repo just
+  re-exports them under the `t3ra` namespace and flattens `nupkgs`'s
+  `$out/modules/<name>` layout back to `$out/<name>` for backwards
+  compatibility with existing consumers (e.g. `modules/nushell-modules`,
+  which assumes a flat layout). `nushell-modules` and `nushell-modules-with`
+  copy files rather than symlink, so that a module's `use ../sibling` (a
+  real relative path to another enabled module) resolves regardless of
+  which subset is selected.
 - `t3ra.nushell-modules-with` - Function to select specific modules
 - `t3ra.zsh` - Zsh with oh-my-zsh and default extensions
 - `t3ra.zsh-with` - Function to select specific extensions
@@ -100,43 +97,6 @@ To use t3rapkgs in another flake:
       # - pkgs.t3ra.zsh
       # - pkgs.t3ra.zsh-with [ "autosuggestions" "syntax-highlighting" ]
     };
-}
-```
-
-### Using lib.devshell (for consumers)
-The `lib.devshell.mkDevShells` helper creates standardized development shells.
-Consumers must bring their own `devshell` input:
-
-```nix
-{
-  inputs = {
-    nixpkgs.url = "nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
-    devshell.url = "github:numtide/devshell";
-    t3rapkgs.url = "github:t3ra-oss/t3rapkgs";
-  };
-
-  outputs = { self, nixpkgs, flake-utils, devshell, t3rapkgs }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [
-            devshell.overlays.default
-            t3rapkgs.overlays.default
-          ];
-        };
-
-        shells = t3rapkgs.lib.devshell.mkDevShells {
-          inherit pkgs system;
-          name = "MyProject";
-          packages = [ pkgs.nodejs ];
-          defaultShell = "nu";  # or "zsh" or "bare"
-          monorepo = true;      # enables moon integration
-        };
-      in {
-        inherit (shells) devShells apps;
-      });
 }
 ```
 
